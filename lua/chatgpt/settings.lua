@@ -22,6 +22,14 @@ local model_validator = function(value)
   return value
 end
 
+local function get_config_path()
+  local xdg_config_home = os.getenv("XDG_CONFIG_HOME")
+  local home = os.getenv("HOME") or os.getenv("USERPROFILE")
+  local config_dir = xdg_config_home or (home .. "/.config")
+  return config_dir .. "/chatgpt-" .. M.type .. "-params.json"
+end
+
+
 local params_order = { "model", "frequency_penalty", "presence_penalty", "max_tokens", "temperature", "top_p" }
 local params_validators = {
   model = model_validator,
@@ -42,8 +50,7 @@ local function write_virtual_text(bufnr, ns, line, chunks, mode)
 end
 
 M.read_config = function()
-  local home = os.getenv("HOME") or os.getenv("USERPROFILE")
-  local file = io.open(home .. "/" .. ".chatgpt-" .. M.type .. "-params.json", "rb")
+  local file = io.open(get_config_path(), "rb")
   if not file then
     return nil
   end
@@ -55,8 +62,7 @@ M.read_config = function()
 end
 
 M.write_config = function(config)
-  local home = os.getenv("HOME") or os.getenv("USERPROFILE")
-  local file, err = io.open(home .. "/" .. ".chatgpt-" .. M.type .. "-params.json", "w")
+  local file, err = io.open(get_config_path(), "w")
   if file ~= nil then
     local json_string = vim.json.encode(config)
     file:write(json_string)
